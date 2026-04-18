@@ -101,33 +101,17 @@ case $WEB_SERVER in
     ;;
 esac
 
-# ── Install git if needed ────────────────────────────
-if ! command -v git &>/dev/null; then
-  log "Installing git..."
-  apt-get install -y -qq git
-fi
+# ── Download files directly via curl ─────────────────
+RAW="https://raw.githubusercontent.com/saggaraaryan311-sys/aaryanhost-ui/main"
 
-# ── Clone or download files ───────────────────────────
-log "Downloading NexaHost UI..."
+log "Downloading NexaHost UI files..."
+mkdir -p "$INSTALL_DIR/assets"
 
-if [[ -d "$INSTALL_DIR/.git" ]]; then
-  warn "Directory exists. Pulling latest changes..."
-  cd "$INSTALL_DIR" && git pull
-else
-  rm -rf "$INSTALL_DIR"
-  if git clone --quiet "$REPO_URL" "$INSTALL_DIR" 2>/dev/null; then
-    ok "Cloned from GitHub successfully."
-  else
-    warn "Git clone failed — downloading as ZIP..."
-    apt-get install -y -qq curl unzip
-    TMP=$(mktemp -d)
-    curl -sL "${REPO_URL}/archive/refs/heads/main.zip" -o "$TMP/nexahost.zip"
-    unzip -q "$TMP/nexahost.zip" -d "$TMP"
-    mv "$TMP"/nexahost-ui-main "$INSTALL_DIR"
-    rm -rf "$TMP"
-    ok "Downloaded and extracted successfully."
-  fi
-fi
+curl -fsSL "$RAW/index.html"        -o "$INSTALL_DIR/index.html"        || err "Failed to download index.html"
+curl -fsSL "$RAW/assets/style.css"  -o "$INSTALL_DIR/assets/style.css"  || err "Failed to download style.css"
+curl -fsSL "$RAW/assets/app.js"     -o "$INSTALL_DIR/assets/app.js"     || err "Failed to download app.js"
+
+ok "All files downloaded successfully."
 
 # ── Set permissions ───────────────────────────────────
 chown -R www-data:www-data "$INSTALL_DIR"
