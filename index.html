@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NexaHost — Game Server Hosting</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/style.css" />
+</head>
+<body>
+
+  <!-- ═══════════════════════════ NAV ═══════════════════════════ -->
+  <nav id="navbar">
+    <div class="nav-inner">
+      <a href="#" class="logo">
+        <span class="logo-icon">⬡</span>
+        <span class="logo-text">NEXA<span class="logo-accent">HOST</span></span>
+      </a>
+      <ul class="nav-links" id="navLinks">
+        <li><a href="#features">Features</a></li>
+        <li><a href="#pricing">Pricing</a></li>
+        <li><a href="#locations">Locations</a></li>
+        <li><a href="#faq">FAQ</a></li>
+        <li><a href="#" class="btn-nav">Login</a></li>
+        <li><a href="#pricing" class="btn-nav btn-glow">Get Started</a></li>
+      </ul>
+      <button class="hamburger" id="hamburger" aria-label="Menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- ═══════════════════════════ HERO ═══════════════════════════ -->
+  <section class="hero" id="home">
+    <div class="hero-grid"></div>
+    <canvas id="particles"></canvas>
+    <div class="hero-content">
+      <div class="hero-badge">⚡ 99.99% Uptime SLA · DDoS Protected · Instant Deploy</div>
+      <h1 class="hero-title">
+        <span class="line1">NEXT-GEN</span>
+        <span class="line2">GAME SERVER</span>
+        <span class="line3">HOSTING</span>
+      </h1>
+      <p class="hero-sub">Deploy your Minecraft, Rust, Valheim, or ARK server in under 60 seconds. Powered by NVMe SSDs, protected by enterprise-grade DDoS mitigation.</p>
+      <div class="hero-actions">
+        <a href="#pricing" class="btn-primary">Deploy Now →</a>
+        <a href="#features" class="btn-ghost">See Features</a>
+      </div>
+      <div class="hero-stats">
+        <div class="stat"><span class="stat-num" data-target="12000">0</span>+<div class="stat-label">Active Servers</div></div>
+        <div class="stat-divider"></div>
+        <div class="stat"><span class="stat-num" data-target="99">0</span>.99%<div class="stat-label">Uptime</div></div>
+        <div class="stat-divider"></div>
+        <div class="stat"><span class="stat-num" data-target="8">0</span><div class="stat-label">Global Nodes</div></div>
+        <div class="stat-divider"></div>
+        <div class="stat"><span class="stat-num" data-target="24">0</span>/7<div class="stat-label">Support</div></div>
+      </div>
+    </div>
+    <div class="hero-scroll">
+      <div class="scroll-line"></div>
+      <span>Scroll</span>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════ GAMES ═══════════════════════════ -->
+  <section class="games-strip">
+    <div class="container">
+      <p class="strip-label">Supported Games</p>
+      <div class="games-ticker">
+        <div class="ticker-inner">
+          <span>⛏ Minecraft</span>
+          <span>🔫 CS2</span>
+          <span>🦀 Rust</span>
+          <span>🐉 ARK</span>
+          <span>🧟 Valheim</span>
+          <span>🚀 Satisfactory</span>
+          <span>🌍 7 Days to Die</span>
+          <span>🏹 DayZ</span>
+          <span>🔮 Terraria</span>
+          <span>⚡ Palworld</span>
+          <span>🏔 Squad</span>
+          <span>🎮 FiveM</span>
+          <!-- duplicate for seamless loop -->
+          <span>⛏ Minecraft</span>
+          <span>🔫 CS2</span>
+          <span>🦀 Rust</span>
+          <span>🐉 ARK</span>
+          <span>🧟 Valheim</span>
+          <span>🚀 Satisfactory</span>
+          <span>🌍 7 Days to Die</span>
+          <span>🏹 DayZ</span>
+          <span>🔮 Terraria</span>
+          <span>⚡ Palworld</span>
+          <span>🏔 Squad</span>
+          <span>🎮 FiveM</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════ FEATURES ═══════════════════════════ -->
+  <section class="features" id="features">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">Why NexaHost</span>
+        <h2>Built For <span class="accent">Performance</span></h2>
+        <p>Every feature engineered to give your players the smoothest experience possible.</p>
+      </div>
+      <div class="features-grid">
+
+        <div class="feat-card feat-large">
+          <div class="feat-icon">🛡️</div>
+          <h3>Enterprise DDoS Shield</h3>
+          <p>Up to 1Tbps+ mitigation on every plan. Volumetric, protocol, and application-layer attacks blocked automatically — zero downtime for your players.</p>
+          <div class="feat-tag">Always On</div>
+        </div>
+
+        <div class="feat-card">
+          <div class="feat-icon">⚡</div>
+          <h3>NVMe SSD Storage</h3>
+          <p>Gen4 NVMe drives with 7,000 MB/s read speeds. World loads in seconds, not minutes.</p>
+        </div>
+
+        <div class="feat-card">
+          <div class="feat-icon">🎮</div>
+          <h3>Pterodactyl Panel</h3>
+          <p>Sleek custom-branded control panel. One-click installs, file manager, console, backups — all in one place.</p>
+        </div>
+
+        <div class="feat-card">
+          <div class="feat-icon">🔄</div>
+          <h3>Instant Backups</h3>
+          <p>Schedule automated backups or trigger them manually. Restore in one click, any time.</p>
+        </div>
+
+        <div class="feat-card feat-large feat-right">
+          <div class="feat-icon">🌐</div>
+          <h3>Global Low-Latency Network</h3>
+          <p>8 nodes across 4 continents. Players connect to the closest node automatically. Sub-20ms ping for most regions.</p>
+          <div class="feat-location-grid">
+            <span>🇮🇳 Mumbai</span>
+            <span>🇸🇬 Singapore</span>
+            <span>🇩🇪 Frankfurt</span>
+            <span>🇺🇸 New York</span>
+            <span>🇺🇸 LA</span>
+            <span>🇧🇷 São Paulo</span>
+            <span>🇦🇺 Sydney</span>
+            <span>🇬🇧 London</span>
+          </div>
+        </div>
+
+        <div class="feat-card">
+          <div class="feat-icon">📊</div>
+          <h3>Real-Time Analytics</h3>
+          <p>CPU, RAM, network graphs. Player count tracking. Performance alerts via Discord or email.</p>
+        </div>
+
+        <div class="feat-card">
+          <div class="feat-icon">🤖</div>
+          <h3>Auto-Scaling RAM</h3>
+          <p>Burst RAM available on demand. No crashes during peak hours or modded server spikes.</p>
+        </div>
+
+        <div class="feat-card">
+          <div class="feat-icon">🔌</div>
+          <h3>Custom Subdomains</h3>
+          <p>Free <code>play.yourserver.nexahost.gg</code> subdomain or connect your own domain with SRV records.</p>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════ PRICING ═══════════════════════════ -->
+  <section class="pricing" id="pricing">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">Pricing</span>
+        <h2>Simple, Transparent <span class="accent">Plans</span></h2>
+        <p>No hidden fees. Cancel anytime. All plans include DDoS protection & 24/7 support.</p>
+      </div>
+
+      <div class="billing-toggle">
+        <span class="toggle-label" id="labelMonthly">Monthly</span>
+        <label class="toggle-switch">
+          <input type="checkbox" id="billingToggle" />
+          <span class="toggle-slider"></span>
+        </label>
+        <span class="toggle-label" id="labelYearly">Yearly <span class="save-badge">Save 20%</span></span>
+      </div>
+
+      <div class="plans-grid">
+
+        <div class="plan-card">
+          <div class="plan-name">Dirt</div>
+          <div class="plan-game">Perfect for small SMP</div>
+          <div class="plan-price">
+            <sup>₹</sup><span class="price-val" data-monthly="149" data-yearly="119">149</span><sub>/mo</sub>
+          </div>
+          <ul class="plan-features">
+            <li>✓ 2 GB RAM</li>
+            <li>✓ 2 vCPU Cores</li>
+            <li>✓ 15 GB NVMe SSD</li>
+            <li>✓ 3 Player Slots (unlimited on Minecraft)</li>
+            <li>✓ DDoS Protection</li>
+            <li>✓ 1 Database</li>
+            <li>✓ Daily Backups</li>
+            <li>✗ Dedicated IP</li>
+          </ul>
+          <a href="#" class="plan-btn">Order Now</a>
+        </div>
+
+        <div class="plan-card plan-popular">
+          <div class="popular-badge">⭐ Most Popular</div>
+          <div class="plan-name">Diamond</div>
+          <div class="plan-game">Best for growing servers</div>
+          <div class="plan-price">
+            <sup>₹</sup><span class="price-val" data-monthly="349" data-yearly="279">349</span><sub>/mo</sub>
+          </div>
+          <ul class="plan-features">
+            <li>✓ 6 GB RAM</li>
+            <li>✓ 4 vCPU Cores</li>
+            <li>✓ 40 GB NVMe SSD</li>
+            <li>✓ Unlimited Player Slots</li>
+            <li>✓ DDoS Protection</li>
+            <li>✓ 5 Databases</li>
+            <li>✓ Hourly Backups</li>
+            <li>✓ Free Dedicated IP</li>
+          </ul>
+          <a href="#" class="plan-btn plan-btn-glow">Order Now</a>
+        </div>
+
+        <div class="plan-card">
+          <div class="plan-name">Netherite</div>
+          <div class="plan-game">For large networks</div>
+          <div class="plan-price">
+            <sup>₹</sup><span class="price-val" data-monthly="799" data-yearly="639">799</span><sub>/mo</sub>
+          </div>
+          <ul class="plan-features">
+            <li>✓ 16 GB RAM</li>
+            <li>✓ 8 vCPU Cores</li>
+            <li>✓ 100 GB NVMe SSD</li>
+            <li>✓ Unlimited Player Slots</li>
+            <li>✓ Enterprise DDoS Protection</li>
+            <li>✓ Unlimited Databases</li>
+            <li>✓ Continuous Backups</li>
+            <li>✓ Dedicated IP + Port</li>
+          </ul>
+          <a href="#" class="plan-btn">Order Now</a>
+        </div>
+
+        <div class="plan-card plan-custom">
+          <div class="plan-name">⚙️ Custom</div>
+          <div class="plan-game">Dedicated bare-metal</div>
+          <div class="plan-price custom-price">Let's Talk</div>
+          <ul class="plan-features">
+            <li>✓ 32–256 GB RAM</li>
+            <li>✓ Dedicated CPU</li>
+            <li>✓ 2–10 TB NVMe RAID</li>
+            <li>✓ Multiple Game Servers</li>
+            <li>✓ Priority Support SLA</li>
+            <li>✓ Custom Panel Branding</li>
+            <li>✓ BGP Anycast DDoS</li>
+            <li>✓ Managed Setup</li>
+          </ul>
+          <a href="#" class="plan-btn">Contact Sales</a>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════ LOCATIONS ═══════════════════════════ -->
+  <section class="locations" id="locations">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">Global Network</span>
+        <h2>8 Nodes, <span class="accent">4 Continents</span></h2>
+        <p>Choose the node closest to your players for the lowest ping.</p>
+      </div>
+      <div class="location-cards">
+        <div class="loc-card active"><span class="flag">🇮🇳</span><div><strong>Mumbai</strong><small>Asia South · ~5ms</small></div><span class="loc-ping">LIVE</span></div>
+        <div class="loc-card active"><span class="flag">🇸🇬</span><div><strong>Singapore</strong><small>Asia SEA · ~18ms</small></div><span class="loc-ping">LIVE</span></div>
+        <div class="loc-card active"><span class="flag">🇩🇪</span><div><strong>Frankfurt</strong><small>Europe · ~12ms</small></div><span class="loc-ping">LIVE</span></div>
+        <div class="loc-card active"><span class="flag">🇬🇧</span><div><strong>London</strong><small>Europe · ~8ms</small></div><span class="loc-ping">LIVE</span></div>
+        <div class="loc-card active"><span class="flag">🇺🇸</span><div><strong>New York</strong><small>US East · ~6ms</small></div><span class="loc-ping">LIVE</span></div>
+        <div class="loc-card active"><span class="flag">🇺🇸</span><div><strong>Los Angeles</strong><small>US West · ~4ms</small></div><span class="loc-ping">LIVE</span></div>
+        <div class="loc-card active"><span class="flag">🇧🇷</span><div><strong>São Paulo</strong><small>South America</small></div><span class="loc-ping">LIVE</span></div>
+        <div class="loc-card coming"><span class="flag">🇦🇺</span><div><strong>Sydney</strong><small>Oceania</small></div><span class="loc-ping coming-ping">SOON</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════ TESTIMONIALS ═══════════════════════════ -->
+  <section class="testimonials" id="reviews">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">Reviews</span>
+        <h2>Trusted by <span class="accent">10,000+</span> Server Owners</h2>
+      </div>
+      <div class="testi-grid">
+        <div class="testi-card">
+          <div class="stars">★★★★★</div>
+          <p>"Migrated from another host and the difference is insane. Zero lag, instant panel response. My 200-player SMP runs perfectly."</p>
+          <div class="testi-author"><span class="avatar">S</span><div><strong>Steve_MC</strong><small>Minecraft SMP · 200 Players</small></div></div>
+        </div>
+        <div class="testi-card testi-featured">
+          <div class="stars">★★★★★</div>
+          <p>"NexaHost's DDoS protection saved our Rust server during a massive attack. Didn't even notice anything happened. Support responded in 4 minutes."</p>
+          <div class="testi-author"><span class="avatar">R</span><div><strong>RustKing_99</strong><small>Rust · 500+ Players</small></div></div>
+        </div>
+        <div class="testi-card">
+          <div class="stars">★★★★★</div>
+          <p>"The Pterodactyl panel is clean, fast, and easy to use. Set up our ARK cluster in under 10 minutes. Highly recommend for Indian server owners."</p>
+          <div class="testi-author"><span class="avatar">A</span><div><strong>ARKLord</strong><small>ARK Survival · Mumbai Node</small></div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════ FAQ ═══════════════════════════ -->
+  <section class="faq" id="faq">
+    <div class="container faq-inner">
+      <div class="section-header">
+        <span class="section-tag">FAQ</span>
+        <h2>Got <span class="accent">Questions?</span></h2>
+      </div>
+      <div class="faq-list" id="faqList">
+
+        <div class="faq-item">
+          <button class="faq-q">How quickly can I deploy a server? <span class="faq-arrow">↓</span></button>
+          <div class="faq-a"><p>Instantly! After payment, your server is automatically provisioned and online within 30–60 seconds. You'll receive your panel login via email.</p></div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-q">Which games are supported? <span class="faq-arrow">↓</span></button>
+          <div class="faq-a"><p>We support 50+ games including Minecraft (all versions/forks), Rust, Valheim, ARK, CS2, FiveM, Terraria, Palworld, 7 Days to Die, DayZ, Squad and many more. New games are added regularly.</p></div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-q">Do I get full FTP/SFTP access? <span class="faq-arrow">↓</span></button>
+          <div class="faq-a"><p>Yes! Every server comes with SFTP access so you can upload mods, plugins, worlds, and custom configs using FileZilla or any SFTP client.</p></div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-q">What DDoS protection do you offer? <span class="faq-arrow">↓</span></button>
+          <div class="faq-a"><p>All plans include enterprise-grade DDoS mitigation that can absorb attacks up to 1Tbps+. Protection is always on, automatic, and requires no configuration from your side.</p></div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-q">Can I upgrade/downgrade my plan? <span class="faq-arrow">↓</span></button>
+          <div class="faq-a"><p>Absolutely. Upgrades take effect instantly with no data loss. Downgrades are processed at the next billing cycle.</p></div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-q">Do you offer refunds? <span class="faq-arrow">↓</span></button>
+          <div class="faq-a"><p>We offer a 72-hour money-back guarantee on your first order. If you're not happy, contact support and we'll refund you — no questions asked.</p></div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-q">What payment methods do you accept? <span class="faq-arrow">↓</span></button>
+          <div class="faq-a"><p>We accept UPI, Paytm, Razorpay, PayPal, and all major debit/credit cards. Crypto payments available on request.</p></div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════ CTA ═══════════════════════════ -->
+  <section class="cta-section">
+    <div class="cta-glow"></div>
+    <div class="container cta-inner">
+      <h2>Ready to <span class="accent">Go Live?</span></h2>
+      <p>Deploy in 60 seconds. No credit card required for the trial.</p>
+      <a href="#pricing" class="btn-primary btn-lg">Start Hosting Today →</a>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════ FOOTER ═══════════════════════════ -->
+  <footer class="footer">
+    <div class="container footer-grid">
+      <div class="footer-brand">
+        <a href="#" class="logo"><span class="logo-icon">⬡</span><span class="logo-text">NEXA<span class="logo-accent">HOST</span></span></a>
+        <p>Next-generation game server hosting. Fast, reliable, and built for gamers.</p>
+        <div class="social-links">
+          <a href="#">Discord</a>
+          <a href="#">Twitter</a>
+          <a href="#">GitHub</a>
+          <a href="#">Instagram</a>
+        </div>
+      </div>
+      <div class="footer-col">
+        <h4>Hosting</h4>
+        <a href="#">Minecraft Hosting</a>
+        <a href="#">Rust Hosting</a>
+        <a href="#">ARK Hosting</a>
+        <a href="#">FiveM Hosting</a>
+        <a href="#">All Games</a>
+      </div>
+      <div class="footer-col">
+        <h4>Company</h4>
+        <a href="#">About Us</a>
+        <a href="#">Status Page</a>
+        <a href="#">Blog</a>
+        <a href="#">Affiliate Program</a>
+      </div>
+      <div class="footer-col">
+        <h4>Support</h4>
+        <a href="#">Knowledge Base</a>
+        <a href="#">Discord Server</a>
+        <a href="#">Submit Ticket</a>
+        <a href="#">Contact Us</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="#">Terms of Service</a>
+        <a href="#">Privacy Policy</a>
+        <a href="#">Refund Policy</a>
+        <a href="#">Acceptable Use</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>© 2025 NexaHost. All rights reserved. | Crafted with ❤️ for gamers.</p>
+      <div class="footer-badges">
+        <span>🛡 DDoS Protected</span>
+        <span>🔒 SSL Secured</span>
+        <span>⚡ 99.99% Uptime</span>
+      </div>
+    </div>
+  </footer>
+
+  <script src="assets/app.js"></script>
+</body>
+</html>
