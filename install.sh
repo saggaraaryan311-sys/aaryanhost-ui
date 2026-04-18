@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # ╔══════════════════════════════════════════════════════╗
 # ║          NexaHost – One-Line Install Script          ║
-# ║    github.com/YOURUSERNAME/nexahost-ui               ║
+# ║    github.com/saggaraaryan311-sys/nexahost-ui               ║
 # ╚══════════════════════════════════════════════════════╝
 
 set -e
@@ -34,7 +34,7 @@ fi
 # ── Defaults ─────────────────────────────────────────
 INSTALL_DIR="/var/www/nexahost"
 PORT=80
-REPO_URL="https://github.com/YOURUSERNAME/nexahost-ui"
+REPO_URL="https://github.com/saggaraaryan311-sys/nexahost-ui"
 DOMAIN=""
 USE_SSL=false
 
