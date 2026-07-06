@@ -45,8 +45,9 @@ echo -e "${WHITE}🌐 Domain: $DOMAIN${NC}"
 echo -e "${WHITE}🕐 Timezone: Asia/Kolkata${NC}"
 echo ""
 
+# Fixed read command - this was the issue
 echo -e -n "${YELLOW}Continue with installation? (y/n): ${NC}"
-read -n 1 -r REPLY
+read -n 1 REPLY
 echo
 if [[ ! $REPLY =~ ^[Yy]$ ]]; then
     echo -e "${RED}❌ Installation cancelled${NC}"
