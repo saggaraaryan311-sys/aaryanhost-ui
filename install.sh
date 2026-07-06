@@ -1,235 +1,207 @@
-#!/usr/bin/env bash
-# ╔══════════════════════════════════════════════════════╗
-# ║          NexaHost – One-Line Install Script          ║
-# ║    github.com/saggaraaryan311-sys/nexahost-ui               ║
-# ╚══════════════════════════════════════════════════════╝
+#!/bin/bash
 
-set -e
+# ==========================================
+# PTERODACTYL PANEL + BLUEPRINT + NEBULA 
+# AUTO INSTALLER - AARYAN EDITION
+# ==========================================
 
-# ── Colors ─────────────────────────────────────────────
-RED='\033[0;31m'; GREEN='\033[0;32m'; CYAN='\033[0;36m'
-YELLOW='\033[1;33m'; BOLD='\033[1m'; RESET='\033[0m'
+# Colors
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+CYAN='\033[0;36m'
+WHITE='\033[1;37m'
+NC='\033[0m'
 
-log()  { echo -e "${CYAN}[NexaHost]${RESET} $1"; }
-ok()   { echo -e "${GREEN}[  OK  ]${RESET} $1"; }
-warn() { echo -e "${YELLOW}[ WARN ]${RESET} $1"; }
-err()  { echo -e "${RED}[ ERR  ]${RESET} $1"; exit 1; }
-
-echo ""
-echo -e "${BOLD}${CYAN}"
-echo "  ███╗   ██╗███████╗██╗  ██╗ █████╗ "
-echo "  ████╗  ██║██╔════╝╚██╗██╔╝██╔══██╗"
-echo "  ██╔██╗ ██║█████╗   ╚███╔╝ ███████║"
-echo "  ██║╚██╗██║██╔══╝   ██╔██╗ ██╔══██║"
-echo "  ██║ ╚████║███████╗██╔╝ ██╗██║  ██║"
-echo "  ╚═╝  ╚═══╝╚══════╝╚═╝  ╚═╝╚═╝  ╚═╝"
-echo "         H O S T  -  U I  v1.0"
-echo -e "${RESET}"
-
-# ── Root check ────────────────────────────────────────
+# Check root
 if [[ $EUID -ne 0 ]]; then
-  err "Please run as root: sudo bash install.sh"
+    echo -e "${RED}❌ Must be root${NC}"
+    exit 1
 fi
 
-# ── Defaults ─────────────────────────────────────────
-INSTALL_DIR="/var/www/nexahost"
-PORT=80
-REPO_URL="https://github.com/saggaraaryan311-sys/nexahost-ui"
-DOMAIN=""
-USE_SSL=false
+clear
+echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+echo -e "${GREEN}     🚀 PTERODACTYL + BLUEPRINT + NEBULA${NC}"
+echo -e "${CYAN}            Auto Installer by Aaryan${NC}"
+echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+echo ""
 
-# ── Argument parsing ──────────────────────────────────
-for arg in "$@"; do
-  case $arg in
-    --domain=*) DOMAIN="${arg#*=}" ;;
-    --port=*)   PORT="${arg#*=}"   ;;
-    --ssl)      USE_SSL=true       ;;
-    --dir=*)    INSTALL_DIR="${arg#*=}" ;;
-    --help|-h)
-      echo "Usage: bash install.sh [options]"
-      echo "  --domain=example.com   Your domain name"
-      echo "  --port=8080            Custom port (default: 80)"
-      echo "  --ssl                  Enable SSL (requires domain + certbot)"
-      echo "  --dir=/path/to/dir     Install directory (default: /var/www/nexahost)"
-      exit 0 ;;
-  esac
-done
+# Ask for domain only
+read -p "$(echo -e ${YELLOW}Enter your Domain/IP: ${NC})" DOMAIN
 
-log "Starting installation..."
-log "Install dir : $INSTALL_DIR"
-log "Port        : $PORT"
-[[ -n "$DOMAIN" ]] && log "Domain      : $DOMAIN"
+if [ -z "$DOMAIN" ]; then
+    DOMAIN=$(curl -s ifconfig.me)
+    echo -e "${YELLOW}⚠️ Using IP: $DOMAIN${NC}"
+fi
 
-# ── Detect web server ────────────────────────────────
-detect_webserver() {
-  if command -v nginx &>/dev/null && systemctl is-active nginx &>/dev/null; then
-    echo "nginx"
-  elif command -v apache2 &>/dev/null && systemctl is-active apache2 &>/dev/null; then
-    echo "apache2"
-  elif command -v nginx &>/dev/null; then
-    echo "nginx-installed"
-  elif command -v apache2 &>/dev/null; then
-    echo "apache-installed"
-  else
-    echo "none"
-  fi
-}
+echo ""
+echo -e "${GREEN}✅ Using Preset Configuration:${NC}"
+echo -e "${WHITE}📧 Email: saggaraaryan311@gmail.com${NC}"
+echo -e "${WHITE}👤 Username: Aaryan${NC}"
+echo -e "${WHITE}🔑 Password: AARYAN_IS_LIVE${NC}"
+echo -e "${WHITE}🌐 Domain: $DOMAIN${NC}"
+echo -e "${WHITE}🕐 Timezone: Asia/Kolkata${NC}"
+echo ""
 
-WEB_SERVER=$(detect_webserver)
-log "Web server detected: $WEB_SERVER"
+read -p "$(echo -e ${YELLOW}Continue with installation? (y/n): ${NC})" -n 1 -r
+echo
+if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+    echo -e "${RED}❌ Installation cancelled${NC}"
+    exit 1
+fi
 
-# ── Install dependencies ──────────────────────────────
-log "Updating package lists..."
-apt-get update -qq
+# Preset Variables
+ADMIN_EMAIL="saggaraaryan311@gmail.com"
+ADMIN_USERNAME="Aaryan"
+ADMIN_PASSWORD="AARYAN_IS_LIVE"
+DB_NAME="panel"
+DB_USER="pterodactyl"
+DB_PASSWORD=$(openssl rand -base64 32)
+PANEL_PATH="/var/www/pterodactyl"
+TIMEZONE="Asia/Kolkata"
 
-case $WEB_SERVER in
-  none)
-    log "No web server found. Installing Nginx..."
-    apt-get install -y -qq nginx
-    systemctl enable nginx
-    systemctl start nginx
-    WEB_SERVER="nginx"
-    ok "Nginx installed and started."
-    ;;
-  nginx-installed)
-    systemctl enable nginx && systemctl start nginx
-    WEB_SERVER="nginx"
-    ;;
-  apache-installed)
-    systemctl enable apache2 && systemctl start apache2
-    WEB_SERVER="apache2"
-    ;;
-esac
+echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
 
-# ── Download files directly via curl ─────────────────
-RAW="https://raw.githubusercontent.com/saggaraaryan311-sys/aaryanhost-ui/main"
+# Set timezone
+timedatectl set-timezone $TIMEZONE > /dev/null 2>&1
 
-log "Downloading NexaHost UI files..."
-mkdir -p "$INSTALL_DIR/assets"
+# Install dependencies
+echo -e "${YELLOW}⏳ [1/8] Installing dependencies...${NC}"
+apt update -y > /dev/null 2>&1
+apt install -y software-properties-common curl wget git unzip \
+    nginx mariadb-server mariadb-client php8.1 php8.1-{cli,common,curl,mbstring,gd,mysql,zip,bcmath,xml,json,tokenizer} \
+    certbot python3-certbot-nginx \
+    composer redis-server nodejs npm > /dev/null 2>&1
 
-curl -fsSL "$RAW/index.html"        -o "$INSTALL_DIR/index.html"        || err "Failed to download index.html"
-curl -fsSL "$RAW/assets/style.css"  -o "$INSTALL_DIR/assets/style.css"  || err "Failed to download style.css"
-curl -fsSL "$RAW/assets/app.js"     -o "$INSTALL_DIR/assets/app.js"     || err "Failed to download app.js"
+curl -fsSL https://deb.nodesource.com/setup_16.x | bash - > /dev/null 2>&1
+apt install -y nodejs > /dev/null 2>&1
+npm install -g yarn > /dev/null 2>&1
+echo -e "${GREEN}✅ Dependencies installed${NC}"
 
-ok "All files downloaded successfully."
+# Install Panel
+echo -e "${YELLOW}⏳ [2/8] Installing Pterodactyl Panel...${NC}"
+mkdir -p $PANEL_PATH
+cd $PANEL_PATH
+curl -Lo panel.tar.gz https://github.com/pterodactyl/panel/releases/latest/download/panel.tar.gz > /dev/null 2>&1
+tar -xzvf panel.tar.gz > /dev/null 2>&1
+cp .env.example .env
+composer install --no-dev --optimize-autoloader > /dev/null 2>&1
+php artisan key:generate --force > /dev/null 2>&1
+chown -R www-data:www-data $PANEL_PATH
+chmod -R 755 $PANEL_PATH/storage $PANEL_PATH/bootstrap/cache
+echo -e "${GREEN}✅ Panel installed${NC}"
 
-# ── Set permissions ───────────────────────────────────
-chown -R www-data:www-data "$INSTALL_DIR"
-chmod -R 755 "$INSTALL_DIR"
-ok "Permissions set."
+# Configure database
+echo -e "${YELLOW}⏳ [3/8] Configuring database...${NC}"
+mysql -e "CREATE DATABASE IF NOT EXISTS $DB_NAME;"
+mysql -e "CREATE USER IF NOT EXISTS '$DB_USER'@'127.0.0.1' IDENTIFIED BY '$DB_PASSWORD';"
+mysql -e "GRANT ALL PRIVILEGES ON $DB_NAME.* TO '$DB_USER'@'127.0.0.1' WITH GRANT OPTION;"
+mysql -e "FLUSH PRIVILEGES;"
 
-# ── Write Nginx config ────────────────────────────────
-write_nginx_config() {
-  local SERVER_NAME="${DOMAIN:-_}"
-  local CONFIG_FILE="/etc/nginx/sites-available/nexahost"
+sed -i "s/DB_PASSWORD=.*/DB_PASSWORD=$DB_PASSWORD/" $PANEL_PATH/.env
+sed -i "s/DB_USERNAME=.*/DB_USERNAME=$DB_USER/" $PANEL_PATH/.env
+sed -i "s/DB_DATABASE=.*/DB_DATABASE=$DB_NAME/" $PANEL_PATH/.env
+echo -e "${GREEN}✅ Database configured${NC}"
 
-  cat > "$CONFIG_FILE" <<NGINX
+# Install Blueprint
+echo -e "${YELLOW}⏳ [4/8] Installing Blueprint Framework...${NC}"
+cd $PANEL_PATH
+curl -Lo blueprint.sh https://raw.githubusercontent.com/BlueprintFramework/framework/master/scripts/install.sh > /dev/null 2>&1
+chmod +x blueprint.sh
+bash blueprint.sh > /dev/null 2>&1
+php artisan blueprint:install > /dev/null 2>&1
+echo -e "${GREEN}✅ Blueprint installed${NC}"
+
+# Install Nebula Theme
+echo -e "${YELLOW}⏳ [5/8] Installing Nebula Theme...${NC}"
+cd $PANEL_PATH
+git clone https://github.com/notnotnotswipez/Nebula > /dev/null 2>&1
+cp -r Nebula/* . > /dev/null 2>&1
+rm -rf Nebula
+yarn install > /dev/null 2>&1
+yarn build > /dev/null 2>&1
+echo "APP_THEME=nebula" >> .env
+echo -e "${GREEN}✅ Nebula theme installed${NC}"
+
+# Configure Nginx
+echo -e "${YELLOW}⏳ [6/8] Configuring Nginx...${NC}"
+cat > /etc/nginx/sites-available/pterodactyl.conf <<EOF
 server {
-    listen ${PORT};
-    listen [::]:${PORT};
-    server_name ${SERVER_NAME};
-    root ${INSTALL_DIR};
-    index index.html;
-
-    # Gzip compression
-    gzip on;
-    gzip_types text/css application/javascript text/html image/svg+xml;
-    gzip_min_length 1024;
-
-    # Cache static assets
-    location ~* \.(css|js|png|jpg|jpeg|gif|ico|svg|woff2)$ {
-        expires 30d;
-        add_header Cache-Control "public, immutable";
-    }
-
+    listen 80;
+    listen [::]:80;
+    server_name $DOMAIN;
+    
+    root /var/www/pterodactyl/public;
+    index index.php index.html index.htm;
+    
     location / {
-        try_files \$uri \$uri/ /index.html;
+        try_files \$uri \$uri/ /index.php?\$query_string;
     }
-
-    # Security headers
-    add_header X-Frame-Options "SAMEORIGIN";
-    add_header X-Content-Type-Options "nosniff";
-    add_header X-XSS-Protection "1; mode=block";
-    add_header Referrer-Policy "strict-origin-when-cross-origin";
+    
+    location ~ \.php\$ {
+        include snippets/fastcgi-php.conf;
+        fastcgi_pass unix:/var/run/php/php8.1-fpm.sock;
+    }
+    
+    location ~ /\.ht {
+        deny all;
+    }
 }
-NGINX
+EOF
 
-  # Enable site
-  ln -sf "$CONFIG_FILE" /etc/nginx/sites-enabled/nexahost
-  rm -f /etc/nginx/sites-enabled/default 2>/dev/null || true
+ln -sf /etc/nginx/sites-available/pterodactyl.conf /etc/nginx/sites-enabled/
+rm -f /etc/nginx/sites-enabled/default
+nginx -t > /dev/null 2>&1 && systemctl restart nginx
+echo -e "${GREEN}✅ Nginx configured${NC}"
 
-  # Test config
-  nginx -t -q 2>/dev/null || err "Nginx config test failed! Check /etc/nginx/sites-available/nexahost"
-  systemctl reload nginx
-  ok "Nginx configured and reloaded."
-}
-
-# ── Write Apache config ───────────────────────────────
-write_apache_config() {
-  local SERVER_NAME="${DOMAIN:-localhost}"
-  local CONFIG_FILE="/etc/apache2/sites-available/nexahost.conf"
-
-  cat > "$CONFIG_FILE" <<APACHE
-<VirtualHost *:${PORT}>
-    ServerName ${SERVER_NAME}
-    DocumentRoot ${INSTALL_DIR}
-
-    <Directory ${INSTALL_DIR}>
-        Options -Indexes +FollowSymLinks
-        AllowOverride All
-        Require all granted
-    </Directory>
-
-    ErrorLog \${APACHE_LOG_DIR}/nexahost_error.log
-    CustomLog \${APACHE_LOG_DIR}/nexahost_access.log combined
-</VirtualHost>
-APACHE
-
-  a2ensite nexahost.conf &>/dev/null
-  a2dissite 000-default.conf &>/dev/null || true
-  a2enmod rewrite &>/dev/null
-  systemctl reload apache2
-  ok "Apache configured and reloaded."
-}
-
-# ── Configure web server ──────────────────────────────
-case $WEB_SERVER in
-  nginx*)  write_nginx_config  ;;
-  apache*) write_apache_config ;;
-esac
-
-# ── SSL with Certbot ──────────────────────────────────
-if [[ "$USE_SSL" == true && -n "$DOMAIN" ]]; then
-  log "Setting up SSL with Certbot..."
-  if ! command -v certbot &>/dev/null; then
-    apt-get install -y -qq certbot python3-certbot-nginx
-  fi
-  certbot --nginx -d "$DOMAIN" --non-interactive --agree-tos --register-unsafely-without-email || {
-    warn "Certbot failed. You can run it manually: certbot --nginx -d $DOMAIN"
-  }
-fi
-
-# ── Get server IP ─────────────────────────────────────
-SERVER_IP=$(curl -s ifconfig.me 2>/dev/null || hostname -I | awk '{print $1}')
-
-# ── Done! ─────────────────────────────────────────────
-echo ""
-echo -e "${GREEN}╔══════════════════════════════════════════╗${RESET}"
-echo -e "${GREEN}║     ✅  INSTALLATION COMPLETE!           ║${RESET}"
-echo -e "${GREEN}╚══════════════════════════════════════════╝${RESET}"
-echo ""
-echo -e "${BOLD}🌐 Your site is live at:${RESET}"
-if [[ -n "$DOMAIN" ]]; then
-  echo -e "   ${CYAN}https://${DOMAIN}${RESET}"
+# Setup SSL
+echo -e "${YELLOW}⏳ [7/8] Setting up SSL with Certbot...${NC}"
+if [[ $DOMAIN != *"."* ]]; then
+    echo -e "${YELLOW}⚠️ IP detected, skipping SSL${NC}"
 else
-  echo -e "   ${CYAN}http://${SERVER_IP}${RESET}"
+    certbot --nginx -d $DOMAIN --non-interactive --agree-tos --email $ADMIN_EMAIL > /dev/null 2>&1
+    echo -e "${GREEN}✅ SSL configured${NC}"
 fi
-echo ""
-echo -e "${BOLD}📁 Files installed to:${RESET}  ${INSTALL_DIR}"
-echo -e "${BOLD}⚙  Web server:${RESET}         ${WEB_SERVER}"
-echo ""
-echo -e "Edit site content: ${YELLOW}nano ${INSTALL_DIR}/index.html${RESET}"
-echo -e "Change branding  : Find & replace 'NexaHost' in index.html"
-echo ""
-echo -e "${CYAN}Good luck with your hosting business! 🚀${RESET}"
-echo ""
+
+# Finalize
+echo -e "${YELLOW}⏳ [8/8] Finalizing installation...${NC}"
+cd $PANEL_PATH
+php artisan migrate --seed --force > /dev/null 2>&1
+
+# Create admin user automatically
+php artisan p:user:make --email=$ADMIN_EMAIL --username=$ADMIN_USERNAME --password=$ADMIN_PASSWORD --name="Admin" --no-interaction > /dev/null 2>&1
+
+chown -R www-data:www-data $PANEL_PATH
+chmod -R 755 $PANEL_PATH/storage $PANEL_PATH/bootstrap/cache
+
+# Setup queue
+echo "* * * * * php $PANEL_PATH/artisan schedule:run >> /dev/null 2>&1" | crontab -
+
+cat > /etc/systemd/system/pterodactyl-queue.service <<EOF
+[Unit]
+Description=Pterodactyl Queue Worker
+After=network.target
+
+[Service]
+User=www-data
+Group=www-data
+ExecStart=/usr/bin/php $PANEL_PATH/artisan queue:work --sleep=3 --tries=3
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+systemctl enable --now pterodactyl-queue > /dev/null 2>&1
+echo -e "${GREEN}✅ Installation finalized!${NC}"
+
+echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+echo -e "${GREEN}🎉 INSTALLATION COMPLETE!${NC}"
+echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+echo -e "${WHITE}🌐 Panel URL: http://$DOMAIN${NC}"
+echo -e "${WHITE}👤 Username: $ADMIN_USERNAME${NC}"
+echo -e "${WHITE}🔑 Password: $ADMIN_PASSWORD${NC}"
+echo -e "${WHITE}📧 Email: $ADMIN_EMAIL${NC}"
+echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
