@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# ==========================================
+# sadasdad==========================================
 # PTERODACTYL PANEL + BLUEPRINT + NEBULA 
 # COMPLETE AUTO INSTALLER - AARYAN EDITION
 # ==========================================
