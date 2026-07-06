@@ -28,7 +28,8 @@ echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━�
 echo ""
 
 # Ask for domain only
-read -p "$(echo -e ${YELLOW}Enter your Domain/IP: ${NC})" DOMAIN
+echo -e -n "${YELLOW}Enter your Domain/IP: ${NC}"
+read DOMAIN
 
 if [ -z "$DOMAIN" ]; then
     DOMAIN=$(curl -s ifconfig.me)
@@ -44,7 +45,8 @@ echo -e "${WHITE}🌐 Domain: $DOMAIN${NC}"
 echo -e "${WHITE}🕐 Timezone: Asia/Kolkata${NC}"
 echo ""
 
-read -p "$(echo -e ${YELLOW}Continue with installation? (y/n): ${NC})" -n 1 -r
+echo -e -n "${YELLOW}Continue with installation? (y/n): ${NC}"
+read -n 1 -r REPLY
 echo
 if [[ ! $REPLY =~ ^[Yy]$ ]]; then
     echo -e "${RED}❌ Installation cancelled${NC}"
