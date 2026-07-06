@@ -1,5 +1,5 @@
 #!/bin/bash
-
+# Fixedd
 # ==========================================
 # PTERODACTYL PANEL + BLUEPRINT + NEBULA 
 # AUTO INSTALLER - AARYAN EDITION
