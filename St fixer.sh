@@ -1,101 +1,25 @@
 <#
 .SYNOPSIS
     Steam Manifest Downloader - AARYAN CHEATS Professional Depot Manifest Acquisition System
-
-.DESCRIPTION
-    Enterprise-grade manifest retrieval system developed exclusively for AARYAN CHEATS.
-    Automatically downloads and synchronizes Steam depot manifests with intelligent
-    multi-source fallback and comprehensive error handling.
-
-.PARAMETER ApiKey
-    ManifestHub API authentication key (required for github+manifesthub mode).
-    Alternatively, set via environment variable: $env:MH_API_KEY
-
-.PARAMETER MorrenusApiKey
-    Morrenus API authentication key (required for github+morrenus mode).
-    Alternatively, set via environment variable: $env:MORRENUS_API_KEY
-
-.PARAMETER AppId
-    Target Steam Application ID for manifest acquisition.
-    Alternatively, set via environment variable: $env:APP_ID
-
-.PARAMETER Mode
-    Operation mode selector. Valid values: github, github+morrenus, github+manifesthub.
-    Defaults to environment variable MANIFEST_MODE or interactive selection.
-
-.PARAMETER OutputDirectory
-    Custom output directory for manifest files. Overrides default depotcache location.
-
-.PARAMETER LogLevel
-    Logging verbosity level. Valid values: Debug, Info, Warning, Error, None.
-    Default: Info
-
-.PARAMETER RetryCount
-    Maximum retry attempts per download operation. Default: 5
-
-.PARAMETER RetryDelay
-    Delay in seconds between retry attempts. Default: 3
-
-.PARAMETER Timeout
-    Download timeout in seconds. Default: 120
-
-.EXAMPLE
-    .\SteamManifestDownloader.ps1 -AppId 730 -Mode github
-
-.EXAMPLE
-    .\SteamManifestDownloader.ps1 -AppId 730 -Mode github+morrenus -MorrenusApiKey "smm_abc123..."
-
-.EXAMPLE
-    $env:MANIFEST_MODE = "github+manifesthub"
-    $env:MH_API_KEY = "your-api-key"
-    .\SteamManifestDownloader.ps1 -AppId 730
-
-.NOTES
-    Version: 2.0.0
-    Developed Exclusively for AARYAN CHEATS
-    Last Updated: 2024
-
-    Supported Modes:
-        github             - Primary GitHub mirror only (no authentication required)
-        github+morrenus    - GitHub primary, Morrenus API as intelligent fallback
-        github+manifesthub - GitHub primary, ManifestHub API as intelligent fallback
+    Windows PowerShell 5.1 Compatible Version
 #>
 
 [CmdletBinding()]
 param(
-    [Parameter(Mandatory = $false)]
     [string]$ApiKey,
-
-    [Parameter(Mandatory = $false)]
     [string]$MorrenusApiKey,
-
-    [Parameter(Mandatory = $false)]
     [string]$AppId,
-
-    [Parameter(Mandatory = $false)]
     [ValidateSet('github', 'github+morrenus', 'github+manifesthub')]
     [string]$Mode,
-
-    [Parameter(Mandatory = $false)]
     [string]$OutputDirectory,
-
-    [Parameter(Mandatory = $false)]
     [ValidateSet('Debug', 'Info', 'Warning', 'Error', 'None')]
     [string]$LogLevel = 'Info',
-
-    [Parameter(Mandatory = $false)]
     [ValidateRange(1, 10)]
     [int]$RetryCount = 5,
-
-    [Parameter(Mandatory = $false)]
     [ValidateRange(1, 30)]
     [int]$RetryDelay = 3,
-
-    [Parameter(Mandatory = $false)]
     [ValidateRange(30, 600)]
     [int]$Timeout = 120,
-
-    [Parameter(Mandatory = $false)]
     [switch]$Quiet
 )
 
@@ -122,14 +46,9 @@ $script:CurrentLogLevel = $script:LogLevels[$LogLevel]
 function Write-Log {
     [CmdletBinding()]
     param(
-        [Parameter(Mandatory = $true)]
         [string]$Message,
-
-        [Parameter(Mandatory = $false)]
         [ValidateSet('Debug', 'Info', 'Warning', 'Error')]
         [string]$Level = 'Info',
-
-        [Parameter(Mandatory = $false)]
         [ConsoleColor]$ForegroundColor
     )
 
@@ -161,7 +80,6 @@ function Write-Log {
     }
 }
 
-# UI Components
 function Write-Header {
     param([string]$CurrentMode = "github")
 
@@ -229,13 +147,6 @@ function Exit-WithPrompt {
 
 #region Core Functions
 function Get-SteamPath {
-    <#
-    .SYNOPSIS
-        Locates the Steam installation directory using multiple detection methods
-    .DESCRIPTION
-        Searches Windows Registry and common installation paths to locate Steam
-    #>
-
     $registryPaths = @(
         "HKLM:\SOFTWARE\WOW6432Node\Valve\Steam",
         "HKLM:\SOFTWARE\Valve\Steam",
@@ -250,11 +161,10 @@ function Get-SteamPath {
                 return $steamPath
             }
         } catch {
-            Write-Log "Registry check failed for $path: $($_.Exception.Message)" -Level Debug
+            Write-Log ("Registry check failed for $path : " + $_.Exception.Message) -Level Debug
         }
     }
 
-    # Fallback: Common installation paths
     $commonPaths = @(
         "$env:ProgramFiles\Steam",
         "${env:ProgramFiles(x86)}\Steam",
@@ -273,13 +183,6 @@ function Get-SteamPath {
 }
 
 function Get-DepotIdsFromLua {
-    <#
-    .SYNOPSIS
-        Extracts depot IDs from SteamTools Lua configuration files
-    .PARAMETER LuaPath
-        Full path to the Lua configuration file
-    #>
-
     param([string]$LuaPath)
 
     Write-Log "Parsing Lua file: $LuaPath" -Level Debug
@@ -291,10 +194,9 @@ function Get-DepotIdsFromLua {
 
     try {
         $content = Get-Content -Path $LuaPath -Encoding UTF8 -ErrorAction Stop
-        $depots = [System.Collections.Generic.List[string]]::new()
+        $depots = New-Object System.Collections.Generic.List[string]
 
         foreach ($line in $content) {
-            # Enhanced pattern matching for addappid declarations
             if ($line -match 'addappid\s*\(\s*(\d+)\s*,\s*\d+\s*,\s*"[a-fA-F0-9]+"') {
                 $depotId = $matches[1]
                 if (-not $depots.Contains($depotId)) {
@@ -304,22 +206,15 @@ function Get-DepotIdsFromLua {
             }
         }
 
-        Write-Log "Extracted $($depots.Count) unique depot IDs" -Level Debug
+        Write-Log ("Extracted " + $depots.Count + " unique depot IDs") -Level Debug
         return $depots.ToArray()
     } catch {
-        Write-Log "Error parsing Lua file: $($_.Exception.Message)" -Level Error -ForegroundColor Red
+        Write-Log ("Error parsing Lua file: " + $_.Exception.Message) -Level Error -ForegroundColor Red
         return @()
     }
 }
 
 function Get-AppInfo {
-    <#
-    .SYNOPSIS
-        Retrieves application information from SteamCMD API
-    .PARAMETER AppId
-        Steam Application ID
-    #>
-
     param([string]$AppId)
 
     $url = "https://api.steamcmd.net/v1/info/$AppId"
@@ -332,27 +227,16 @@ function Get-AppInfo {
             Write-Log "Application information retrieved successfully" -Level Debug
             return $response
         } else {
-            Write-Log "API returned non-success status: $($response.status)" -Level Warning
+            Write-Log ("API returned non-success status: " + $response.status) -Level Warning
             return $null
         }
     } catch {
-        Write-Log "Failed to retrieve application information: $($_.Exception.Message)" -Level Error
+        Write-Log ("Failed to retrieve application information: " + $_.Exception.Message) -Level Error
         return $null
     }
 }
 
 function Get-ManifestIdForDepot {
-    <#
-    .SYNOPSIS
-        Retrieves the manifest ID for a specific depot from application data
-    .PARAMETER AppInfo
-        Application information object from SteamCMD API
-    .PARAMETER AppId
-        Steam Application ID
-    .PARAMETER DepotId
-        Depot ID to query
-    #>
-
     param(
         [object]$AppInfo,
         [string]$AppId,
@@ -363,130 +247,19 @@ function Get-ManifestIdForDepot {
         $depots = $AppInfo.data.$AppId.depots
         if ($depots.$DepotId -and $depots.$DepotId.manifests -and $depots.$DepotId.manifests.public) {
             $manifestId = $depots.$DepotId.manifests.public.gid
-            Write-Log "Retrieved manifest ID $manifestId for depot $DepotId" -Level Debug
+            Write-Log ("Retrieved manifest ID $manifestId for depot $DepotId") -Level Debug
             return $manifestId
         } else {
-            Write-Log "No manifest found for depot $DepotId" -Level Debug
+            Write-Log ("No manifest found for depot $DepotId") -Level Debug
             return $null
         }
     } catch {
-        Write-Log "Error retrieving manifest ID for depot $DepotId: $($_.Exception.Message)" -Level Error
+        Write-Log ("Error retrieving manifest ID for depot $DepotId : " + $_.Exception.Message) -Level Error
         return $null
     }
 }
 
-function Download-Manifest {
-    <#
-    .SYNOPSIS
-        Downloads a manifest file from configured sources with intelligent fallback
-    .PARAMETER DepotId
-        Target depot ID
-    .PARAMETER ManifestId
-        Target manifest ID
-    .PARAMETER OutputPath
-        Directory to save the manifest file
-    .PARAMETER Mode
-        Operation mode determining source priority
-    .PARAMETER ApiKey
-        API key for secondary services
-    .PARAMETER RetryCount
-        Maximum retry attempts per source
-    .PARAMETER RetryDelay
-        Delay between retry attempts in seconds
-    .PARAMETER Timeout
-        Download timeout in seconds
-    #>
-
-    param(
-        [string]$DepotId,
-        [string]$ManifestId,
-        [string]$OutputPath,
-        [string]$Mode = 'github',
-        [string]$ApiKey = $null,
-        [int]$RetryCount = 5,
-        [int]$RetryDelay = 3,
-        [int]$Timeout = 120
-    )
-
-    $outputFile = Join-Path $OutputPath "${DepotId}_${ManifestId}.manifest"
-    $githubUrl = "https://raw.githubusercontent.com/qwe213312/k25FCdfEOoEJ42S6/main/${DepotId}_${ManifestId}.manifest"
-
-    Write-Log "Processing depot $DepotId (Manifest: $ManifestId)" -Level Debug
-
-    # Primary Source: GitHub Mirror
-    Write-Log "Attempting download from GitHub mirror..." -Level Debug
-
-    $githubResult = Invoke-Download -Url $githubUrl -OutputFile $outputFile -RetryCount 2 -RetryDelay $RetryDelay -Timeout $Timeout -Source "GitHub"
-
-    if ($githubResult.Success) {
-        Write-Log "Successfully downloaded from GitHub mirror" -Level Info
-        return @{
-            Success     = $true
-            Source      = 'GitHub'
-            FilePath    = $outputFile
-            Size        = $githubResult.Size
-            Attempts    = $githubResult.Attempts
-            IsFallback  = $false
-        }
-    }
-
-    # Secondary Source: Configured API Fallback
-    if ($Mode -ne 'github' -and $ApiKey) {
-        $secondaryConfig = switch ($Mode) {
-            'github+morrenus' {
-                @{
-                    Url = "https://hubcapmanifest.com/api/v1/generate/manifest?depot_id=${DepotId}&manifest_id=${ManifestId}&api_key=${ApiKey}"
-                    Source = 'Morrenus'
-                }
-            }
-            'github+manifesthub' {
-                @{
-                    Url = "https://api.manifesthub1.filegear-sg.me/manifest?apikey=${ApiKey}&depotid=${DepotId}&manifestid=${ManifestId}"
-                    Source = 'ManifestHub'
-                }
-            }
-            default { $null }
-        }
-
-        if ($secondaryConfig) {
-            Write-Log "Attempting fallback download from $($secondaryConfig.Source)..." -Level Warning
-
-            $fallbackResult = Invoke-Download -Url $secondaryConfig.Url -OutputFile $outputFile -RetryCount $RetryCount -RetryDelay $RetryDelay -Timeout $Timeout -Source $secondaryConfig.Source
-
-            if ($fallbackResult.Success) {
-                Write-Log "Successfully downloaded from $($secondaryConfig.Source) fallback" -Level Info
-                return @{
-                    Success     = $true
-                    Source      = $secondaryConfig.Source
-                    FilePath    = $outputFile
-                    Size        = $fallbackResult.Size
-                    Attempts    = $fallbackResult.Attempts
-                    IsFallback  = $true
-                }
-            } else {
-                Write-Log "Fallback download from $($secondaryConfig.Source) failed: $($fallbackResult.Error)" -Level Error
-            }
-        }
-    } else {
-        Write-Log "No fallback source configured or API key missing" -Level Debug
-    }
-
-    # All sources failed
-    return @{
-        Success  = $false
-        Source   = 'None'
-        Error    = $githubResult.Error
-        Attempts = $githubResult.Attempts
-        Is404    = $githubResult.Is404
-    }
-}
-
 function Invoke-Download {
-    <#
-    .SYNOPSIS
-        Core download function with retry logic and error handling
-    #>
-
     param(
         [string]$Url,
         [string]$OutputFile,
@@ -504,14 +277,14 @@ function Invoke-Download {
                 Remove-Item $OutputFile -Force -ErrorAction SilentlyContinue
             }
 
-            Write-Log "Download attempt $attempt/$RetryCount from $Source" -Level Debug
+            Write-Log ("Download attempt $attempt/$RetryCount from $Source") -Level Debug
 
             $webRequest = Invoke-WebRequest -Uri $Url -Method Get -TimeoutSec $Timeout -OutFile $OutputFile -ErrorAction Stop
 
             if (Test-Path $OutputFile) {
                 $fileInfo = Get-Item $OutputFile
                 if ($fileInfo.Length -gt 0) {
-                    Write-Log "Successfully downloaded $($fileInfo.Length) bytes from $Source" -Level Debug
+                    Write-Log ("Successfully downloaded " + $fileInfo.Length + " bytes from $Source") -Level Debug
                     return @{
                         Success  = $true
                         Size     = $fileInfo.Length
@@ -532,7 +305,7 @@ function Invoke-Download {
             }
 
             if ($statusCode -eq 404) {
-                Write-Log "Resource not found (404) at $Source" -Level Debug
+                Write-Log ("Resource not found (404) at $Source") -Level Debug
                 if (Test-Path $OutputFile) {
                     Remove-Item $OutputFile -Force -ErrorAction SilentlyContinue
                 }
@@ -545,11 +318,11 @@ function Invoke-Download {
             }
 
             $lastError = $_.Exception.Message
-            Write-Log "Attempt $attempt failed: $lastError" -Level Debug
+            Write-Log ("Attempt $attempt failed: $lastError") -Level Debug
         }
 
         if ($attempt -lt $RetryCount) {
-            Write-Log "Retrying in $RetryDelay seconds..." -Level Debug
+            Write-Log ("Retrying in $RetryDelay seconds...") -Level Debug
             Start-Sleep -Seconds $RetryDelay
         }
     }
@@ -562,14 +335,97 @@ function Invoke-Download {
     }
 }
 
+function Download-Manifest {
+    param(
+        [string]$DepotId,
+        [string]$ManifestId,
+        [string]$OutputPath,
+        [string]$Mode = 'github',
+        [string]$ApiKey = $null,
+        [int]$RetryCount = 5,
+        [int]$RetryDelay = 3,
+        [int]$Timeout = 120
+    )
+
+    $outputFile = Join-Path $OutputPath "${DepotId}_${ManifestId}.manifest"
+    $githubUrl = "https://raw.githubusercontent.com/qwe213312/k25FCdfEOoEJ42S6/main/${DepotId}_${ManifestId}.manifest"
+
+    Write-Log ("Processing depot $DepotId (Manifest: $ManifestId)") -Level Debug
+
+    $githubResult = Invoke-Download -Url $githubUrl -OutputFile $outputFile -RetryCount 2 -RetryDelay $RetryDelay -Timeout $Timeout -Source "GitHub"
+
+    if ($githubResult.Success) {
+        Write-Log "Successfully downloaded from GitHub mirror" -Level Info
+        return @{
+            Success     = $true
+            Source      = 'GitHub'
+            FilePath    = $outputFile
+            Size        = $githubResult.Size
+            Attempts    = $githubResult.Attempts
+            IsFallback  = $false
+        }
+    }
+
+    if ($Mode -ne 'github' -and $ApiKey) {
+        $secondaryConfig = switch ($Mode) {
+            'github+morrenus' {
+                @{
+                    Url = "https://hubcapmanifest.com/api/v1/generate/manifest?depot_id=${DepotId}&manifest_id=${ManifestId}&api_key=${ApiKey}"
+                    Source = 'Morrenus'
+                }
+            }
+            'github+manifesthub' {
+                @{
+                    Url = "https://api.manifesthub1.filegear-sg.me/manifest?apikey=${ApiKey}&depotid=${DepotId}&manifestid=${ManifestId}"
+                    Source = 'ManifestHub'
+                }
+            }
+            default { $null }
+        }
+
+        if ($secondaryConfig) {
+            Write-Log ("Attempting fallback download from " + $secondaryConfig.Source + "...") -Level Warning
+
+            $fallbackResult = Invoke-Download -Url $secondaryConfig.Url -OutputFile $outputFile -RetryCount $RetryCount -RetryDelay $RetryDelay -Timeout $Timeout -Source $secondaryConfig.Source
+
+            if ($fallbackResult.Success) {
+                Write-Log ("Successfully downloaded from " + $secondaryConfig.Source + " fallback") -Level Info
+                return @{
+                    Success     = $true
+                    Source      = $secondaryConfig.Source
+                    FilePath    = $outputFile
+                    Size        = $fallbackResult.Size
+                    Attempts    = $fallbackResult.Attempts
+                    IsFallback  = $true
+                }
+            } else {
+                Write-Log ("Fallback download from " + $secondaryConfig.Source + " failed: " + $fallbackResult.Error) -Level Error
+            }
+        }
+    } else {
+        Write-Log "No fallback source configured or API key missing" -Level Debug
+    }
+
+    return @{
+        Success  = $false
+        Source   = 'None'
+        Error    = $githubResult.Error
+        Attempts = $githubResult.Attempts
+        Is404    = $githubResult.Is404
+    }
+}
+
 function Format-FileSize {
     param([long]$Bytes)
 
-    switch ($Bytes) {
-        { $_ -ge 1GB } { "{0:N2} GB" -f ($_ / 1GB) }
-        { $_ -ge 1MB } { "{0:N2} MB" -f ($_ / 1MB) }
-        { $_ -ge 1KB } { "{0:N2} KB" -f ($_ / 1KB) }
-        default        { "$_ B" }
+    if ($Bytes -ge 1GB) {
+        return ("{0:N2} GB" -f ($Bytes / 1GB))
+    } elseif ($Bytes -ge 1MB) {
+        return ("{0:N2} MB" -f ($Bytes / 1MB))
+    } elseif ($Bytes -ge 1KB) {
+        return ("{0:N2} KB" -f ($Bytes / 1KB))
+    } else {
+        return ("$Bytes B")
     }
 }
 
@@ -580,7 +436,7 @@ function Validate-ApiKey {
     )
 
     if (-not $Key) {
-        Write-Log "$Service API key is required" -Level Error -ForegroundColor Red
+        Write-Log ("$Service API key is required") -Level Error -ForegroundColor Red
         return $false
     }
 
@@ -591,15 +447,14 @@ function Validate-ApiKey {
                 Write-Log "Expected: smm_ followed by 96 hex characters" -Level Info
                 return $false
             }
-            # Validate with Morrenus API
             try {
                 Write-Log "Validating Morrenus API key..." -Level Info
                 $response = Invoke-RestMethod -Uri "https://hubcapmanifest.com/api/v1/user/stats?api_key=$Key" -Method Get -TimeoutSec 15 -ErrorAction Stop
                 if (-not $response.can_make_requests) {
-                    Write-Log "Morrenus API key has reached daily limit: $($response.daily_usage)/$($response.daily_limit)" -Level Warning -ForegroundColor Yellow
+                    Write-Log ("Morrenus API key has reached daily limit: " + $response.daily_usage + "/" + $response.daily_limit) -Level Warning -ForegroundColor Yellow
                     return $false
                 }
-                Write-Log "Morrenus API key validated successfully. Welcome $($response.username)!" -Level Info -ForegroundColor Green
+                Write-Log ("Morrenus API key validated successfully. Welcome " + $response.username + "!") -Level Info -ForegroundColor Green
                 return $true
             } catch {
                 $statusCode = $null
@@ -608,20 +463,19 @@ function Validate-ApiKey {
                 if ($statusCode -in 401, 403, 404) {
                     $errorMsg += ": Invalid or expired key"
                 } else {
-                    $errorMsg += ": $($_.Exception.Message)"
+                    $errorMsg += (": " + $_.Exception.Message)
                 }
                 Write-Log $errorMsg -Level Error -ForegroundColor Red
                 return $false
             }
         }
         'ManifestHub' {
-            # Basic format validation - ManifestHub keys are typically alphanumeric
             if ($Key -match '^[a-zA-Z0-9_-]+$') {
                 Write-Log "ManifestHub API key validated" -Level Info
                 return $true
             } else {
                 Write-Log "ManifestHub API key format appears invalid" -Level Warning
-                return $true  # Allow through for now, will fail gracefully if invalid
+                return $true
             }
         }
         default { return $true }
@@ -631,7 +485,6 @@ function Validate-ApiKey {
 
 #region Main Execution
 try {
-    # Initialize Operation
     $resolvedMode = if ($Mode) { $Mode } else { $env:MANIFEST_MODE }
 
     if (-not $resolvedMode) {
@@ -661,15 +514,13 @@ try {
         }
     }
 
-    # Display Header
     if (-not $Quiet) {
         Write-Header -CurrentMode $resolvedMode
     } else {
         Write-Log "Starting AARYAN CHEATS Steam Manifest Downloader v2.0" -Level Info
-        Write-Log "Mode: $resolvedMode" -Level Info
+        Write-Log ("Mode: $resolvedMode") -Level Info
     }
 
-    # Resolve API Keys
     $activeApiKey = $null
 
     switch ($resolvedMode) {
@@ -731,7 +582,6 @@ try {
         }
     }
 
-    # Get Application ID
     if (-not $AppId) {
         $AppId = $env:APP_ID
     }
@@ -751,9 +601,8 @@ try {
         }
     }
 
-    Write-Log "Processing Application ID: $AppId" -Level Info
+    Write-Log ("Processing Application ID: $AppId") -Level Info
 
-    # Locate Steam Installation
     Write-Log "Locating Steam installation..." -Level Info
     $steamPath = Get-SteamPath
 
@@ -762,19 +611,17 @@ try {
         Exit-WithPrompt
     }
 
-    Write-Log "Steam installation found: $steamPath" -Level Info -ForegroundColor Green
+    Write-Log ("Steam installation found: $steamPath") -Level Info -ForegroundColor Green
 
-    # Locate Lua Configuration
     $luaPath = Join-Path $steamPath "config\stplug-in\$AppId.lua"
-    Write-Log "Checking Lua configuration: $luaPath" -Level Debug
+    Write-Log ("Checking Lua configuration: $luaPath") -Level Debug
 
     if (-not (Test-Path $luaPath)) {
-        Write-Log "Lua configuration not found for App ID $AppId" -Level Error -ForegroundColor Red
-        Write-Log "Expected location: $luaPath" -Level Info
+        Write-Log ("Lua configuration not found for App ID $AppId") -Level Error -ForegroundColor Red
+        Write-Log ("Expected location: $luaPath") -Level Info
         Exit-WithPrompt
     }
 
-    # Parse Depot IDs
     Write-Log "Parsing depot IDs from Lua configuration..." -Level Info
     $depotIds = Get-DepotIdsFromLua -LuaPath $luaPath
 
@@ -783,9 +630,8 @@ try {
         Exit-WithPrompt
     }
 
-    Write-Log "Found $($depotIds.Count) depot IDs" -Level Info -ForegroundColor Green
+    Write-Log ("Found " + $depotIds.Count + " depot IDs") -Level Info -ForegroundColor Green
 
-    # Display Depot IDs
     if (-not $Quiet) {
         Write-Divider
         Write-Host "  │ DEPOT IDS FOUND" -ForegroundColor DarkGray
@@ -794,12 +640,11 @@ try {
         if ($depotList.Length -gt 55) {
             $depotList = $depotList.Substring(0, 52) + "..."
         }
-        Write-Host "  │ $($depotList.PadRight(60))│" -ForegroundColor White
+        Write-Host ("  │ " + $depotList.PadRight(60) + "│") -ForegroundColor White
         Write-Divider
         Write-Host ""
     }
 
-    # Fetch Application Information
     Write-Log "Fetching application information from SteamCMD API..." -Level Info
     $appInfo = Get-AppInfo -AppId $AppId
 
@@ -808,9 +653,8 @@ try {
         Exit-WithPrompt
     }
 
-    # Build Download Queue
     Write-Log "Building download queue..." -Level Info
-    $downloadQueue = [System.Collections.Generic.List[PSObject]]::new()
+    $downloadQueue = New-Object System.Collections.Generic.List[PSObject]
 
     foreach ($depotId in $depotIds) {
         $manifestId = Get-ManifestIdForDepot -AppInfo $appInfo -AppId $AppId -DepotId $depotId
@@ -820,9 +664,9 @@ try {
                 DepotId = $depotId
                 ManifestId = $manifestId
             })
-            Write-Log "Queued depot $depotId with manifest $manifestId" -Level Debug
+            Write-Log ("Queued depot $depotId with manifest $manifestId") -Level Debug
         } else {
-            Write-Log "No manifest available for depot $depotId" -Level Warning
+            Write-Log ("No manifest available for depot $depotId") -Level Warning
         }
     }
 
@@ -831,9 +675,8 @@ try {
         Exit-WithPrompt
     }
 
-    Write-Log "$($downloadQueue.Count) depots queued for download" -Level Info -ForegroundColor Green
+    Write-Log ("$($downloadQueue.Count) depots queued for download") -Level Info -ForegroundColor Green
 
-    # Prepare Output Directory
     $depotCachePath = if ($OutputDirectory) {
         $OutputDirectory
     } else {
@@ -842,12 +685,11 @@ try {
 
     if (-not (Test-Path $depotCachePath)) {
         New-Item -ItemType Directory -Path $depotCachePath -Force | Out-Null
-        Write-Log "Created output directory: $depotCachePath" -Level Debug
+        Write-Log ("Created output directory: $depotCachePath") -Level Debug
     }
 
-    Write-Log "Output directory: $depotCachePath" -Level Info
+    Write-Log ("Output directory: $depotCachePath") -Level Info
 
-    # Begin Download Process
     if (-not $Quiet) {
         Write-Host ""
         Write-Divider
@@ -859,7 +701,7 @@ try {
     $successCount = 0
     $skippedCount = 0
     $fallbackCount = 0
-    $failedDepots = [System.Collections.Generic.List[PSObject]]::new()
+    $failedDepots = New-Object System.Collections.Generic.List[PSObject]
     $totalSize = 0
     $startTime = Get-Date
 
@@ -868,36 +710,32 @@ try {
         $depotId = $item.DepotId
         $manifestId = $item.ManifestId
 
-        # Update Progress
         if (-not $Quiet) {
             Write-ProgressBar -Current $i -Total $downloadQueue.Count -Label "Overall Progress" -Color Cyan
             Write-Host ""
             Write-Host ""
         }
 
-        # Check for Existing File
         $existingFile = Join-Path $depotCachePath "${depotId}_${manifestId}.manifest"
         if (Test-Path $existingFile) {
             $existingSize = (Get-Item $existingFile).Length
             if ($existingSize -gt 0) {
                 $skippedCount++
-                Write-Log "Depot $depotId: File already exists and is valid ($(Format-FileSize -Bytes $existingSize))" -Level Info
+                Write-Log ("Depot $depotId : File already exists and is valid (" + (Format-FileSize -Bytes $existingSize) + ")") -Level Info
                 if (-not $Quiet) {
-                    Write-Host "  [SKIP] Depot $depotId - File is current ($(Format-FileSize -Bytes $existingSize))" -ForegroundColor DarkCyan
+                    Write-Host ("  [SKIP] Depot $depotId - File is current (" + (Format-FileSize -Bytes $existingSize) + ")") -ForegroundColor DarkCyan
                 }
                 continue
             }
         }
 
-        # Display Download Header
         if (-not $Quiet) {
             Write-Divider
-            Write-Host "  │ Processing Depot: $depotId" -ForegroundColor Yellow
-            Write-Host "  │ Manifest ID: $manifestId" -ForegroundColor White
+            Write-Host ("  │ Processing Depot: $depotId") -ForegroundColor Yellow
+            Write-Host ("  │ Manifest ID: $manifestId") -ForegroundColor White
             Write-Divider
         }
 
-        # Perform Download
         $result = Download-Manifest -DepotId $depotId -ManifestId $manifestId -OutputPath $depotCachePath -Mode $resolvedMode -ApiKey $activeApiKey -RetryCount $RetryCount -RetryDelay $RetryDelay -Timeout $Timeout
 
         if ($result.Success) {
@@ -908,13 +746,13 @@ try {
                 $fallbackCount++
             }
 
-            $sourceLabel = if ($result.IsFallback) { "via $($result.Source) fallback" } else { "from $($result.Source)" }
+            $sourceLabel = if ($result.IsFallback) { ("via " + $result.Source + " fallback") } else { ("from " + $result.Source) }
             $sizeStr = Format-FileSize -Bytes $result.Size
-            $attemptInfo = if ($result.Attempts -gt 1) { " ($($result.Attempts) attempts)" } else { "" }
+            $attemptInfo = if ($result.Attempts -gt 1) { (" (" + $result.Attempts + " attempts)") } else { "" }
 
-            Write-Log "Depot $depotId: Downloaded successfully $sourceLabel ($sizeStr)$attemptInfo" -Level Info
+            Write-Log ("Depot $depotId : Downloaded successfully $sourceLabel ($sizeStr)$attemptInfo") -Level Info
             if (-not $Quiet) {
-                Write-Host "  [OK]   Depot $depotId - Downloaded $sourceLabel ($sizeStr)$attemptInfo" -ForegroundColor Green
+                Write-Host ("  [OK]   Depot $depotId - Downloaded $sourceLabel ($sizeStr)$attemptInfo") -ForegroundColor Green
             }
         } else {
             $failedDepots.Add([PSCustomObject]@{
@@ -922,14 +760,13 @@ try {
                 ManifestId = $manifestId
                 Error = $result.Error
             })
-            Write-Log "Depot $depotId: Download failed - $($result.Error)" -Level Error
+            Write-Log ("Depot $depotId : Download failed - " + $result.Error) -Level Error
             if (-not $Quiet) {
-                Write-Host "  [FAIL] Depot $depotId - $($result.Error)" -ForegroundColor Red
+                Write-Host ("  [FAIL] Depot $depotId - " + $result.Error) -ForegroundColor Red
             }
         }
     }
 
-    # Final Progress Update
     if (-not $Quiet) {
         Write-Host ""
         Write-ProgressBar -Current $downloadQueue.Count -Total $downloadQueue.Count -Label "Overall Progress" -Color Cyan
@@ -939,7 +776,6 @@ try {
     $endTime = Get-Date
     $elapsed = $endTime - $startTime
 
-    # Generate Summary Report
     if (-not $Quiet) {
         Write-Host ""
         Write-Divider
@@ -947,22 +783,21 @@ try {
         Write-Divider
         Write-Host "  │ STATUS" -ForegroundColor White
         Write-Host "  │"
-        Write-Host "  │   Successful:   $successCount depots" -ForegroundColor Green
-        Write-Host "  │   Skipped:      $skippedCount depots (up-to-date)" -ForegroundColor DarkCyan
+        Write-Host ("  │   Successful:   $successCount depots") -ForegroundColor Green
+        Write-Host ("  │   Skipped:      $skippedCount depots (up-to-date)") -ForegroundColor DarkCyan
         if ($fallbackCount -gt 0) {
-            Write-Host "  │   Fallback:     $fallbackCount depots ($($fallbackCount -gt 1 ? 'depots' : 'depot') retrieved from secondary source)" -ForegroundColor Yellow
+            Write-Host ("  │   Fallback:     $fallbackCount depots (retrieved from secondary source)") -ForegroundColor Yellow
         }
         $failedColor = if ($failedDepots.Count -gt 0) { "Red" } else { "Green" }
-        Write-Host "  │   Failed:       $($failedDepots.Count) depots" -ForegroundColor $failedColor
+        Write-Host ("  │   Failed:       " + $failedDepots.Count + " depots") -ForegroundColor $failedColor
         Write-Host "  │"
-        Write-Host "  │   Total Size:   $(Format-FileSize -Bytes $totalSize)" -ForegroundColor White
-        Write-Host "  │   Time Elapsed: $($elapsed.ToString('mm\:ss'))" -ForegroundColor White
+        Write-Host ("  │   Total Size:   " + (Format-FileSize -Bytes $totalSize)) -ForegroundColor White
+        Write-Host ("  │   Time Elapsed: " + $elapsed.ToString('mm\:ss')) -ForegroundColor White
         Write-Host "  │"
         Write-Host "  │ OUTPUT" -ForegroundColor White
-        Write-Host "  │   Directory: $depotCachePath" -ForegroundColor White
+        Write-Host ("  │   Directory: $depotCachePath") -ForegroundColor White
         Write-Divider
 
-        # Display Failed Depots
         if ($failedDepots.Count -gt 0) {
             Write-Host ""
             Write-Host "  ┌─────────────────────────────────────────────────────────────┐" -ForegroundColor Red
@@ -971,18 +806,16 @@ try {
             foreach ($failed in $failedDepots) {
                 $errorMsg = $failed.Error
                 if ($errorMsg.Length -gt 55) { $errorMsg = $errorMsg.Substring(0, 52) + "..." }
-                Write-Host "  │  Depot $($failed.DepotId) -> $errorMsg".PadRight(61) -ForegroundColor Red
+                Write-Host ("  │  Depot " + $failed.DepotId + " -> " + $errorMsg).PadRight(61) -ForegroundColor Red
             }
             Write-Host "  └─────────────────────────────────────────────────────────────┘" -ForegroundColor Red
         }
     } else {
-        # Quiet mode summary
-        Write-Log "Download complete: $successCount succeeded, $skippedCount skipped, $($failedDepots.Count) failed" -Level Info
-        Write-Log "Total size: $(Format-FileSize -Bytes $totalSize)" -Level Info
-        Write-Log "Time elapsed: $($elapsed.ToString('mm\:ss'))" -Level Info
+        Write-Log ("Download complete: $successCount succeeded, $skippedCount skipped, " + $failedDepots.Count + " failed") -Level Info
+        Write-Log ("Total size: " + (Format-FileSize -Bytes $totalSize)) -Level Info
+        Write-Log ("Time elapsed: " + $elapsed.ToString('mm\:ss')) -Level Info
     }
 
-    # Exit
     if (-not $Quiet) {
         Write-Host ""
         Write-Host "  Press any key to exit..." -ForegroundColor DarkGray
@@ -992,8 +825,8 @@ try {
     exit 0
 
 } catch {
-    Write-Log "Unhandled exception: $($_.Exception.Message)" -Level Error -ForegroundColor Red
-    Write-Log "Stack trace: $($_.ScriptStackTrace)" -Level Debug
+    Write-Log ("Unhandled exception: " + $_.Exception.Message) -Level Error -ForegroundColor Red
+    Write-Log ("Stack trace: " + $_.ScriptStackTrace) -Level Debug
     if (-not $Quiet) {
         Exit-WithPrompt
     }
